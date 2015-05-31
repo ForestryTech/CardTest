@@ -196,13 +196,7 @@ namespace CardTester
         static bool isThreeOfAKind(List<Card> cards) {
             Dictionary<Values, int> count = new Dictionary<Values, int>();
 
-            foreach (Card card in cards) {
-                if (count.ContainsKey(card.Value)) {
-                    count[card.Value]++;
-                } else {
-                    count.Add(card.Value, 1);
-                }
-            }
+            count = getCardDictionary(cards);
             foreach (var item in count) {
                 if (item.Value == 3)
                     return true;
@@ -212,13 +206,7 @@ namespace CardTester
 
         static bool isPair(List<Card> cards) {
             Dictionary<Values, int> count = new Dictionary<Values, int>();
-            foreach (Card card in cards) {
-                if (count.ContainsKey(card.Value)) {
-                    count[card.Value]++;
-                } else {
-                    count.Add(card.Value, 1);
-                }
-            }
+            count = getCardDictionary(cards);
             foreach (var item in count) {
                 if (item.Value == 2)
                     return true;
@@ -236,7 +224,6 @@ namespace CardTester
                     firstPair = true;
                 if (item.Value == 2 && firstPair)
                     secondPair = true;
-
             }
 
             if (firstPair && secondPair)
