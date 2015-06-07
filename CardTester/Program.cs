@@ -22,7 +22,7 @@ namespace CardTester
             List<Card> straight = new List<Card>() {
                 new Card(Suits.Clubs, Values.Two),
                 new Card(Suits.Diamonds, Values.Four),
-                new Card(Suits.Hearts, Values.Seven),
+                new Card(Suits.Hearts, Values.Ten),
                 new Card(Suits.Diamonds, Values.Six),
                 new Card(Suits.Hearts, Values.Three),
                 new Card(Suits.Clubs, Values.Five),
@@ -61,13 +61,14 @@ namespace CardTester
 
             Console.WriteLine("acesLow Not sorted.");
             DisplayCards(aceLow);
-            Console.WriteLine("\nacesLow Sorted low to hight: ");
+            Console.WriteLine("\nacesLow Sorted High to Low: ");
             aceLow.Sort(new CardComparerValue());
             DisplayCards(aceLow);
             Console.WriteLine("\nacesLow Sorted with aces low:");
             aceLow.Sort(new CardCompareAcesLow());
             DisplayCards(aceLow);
 
+            Console.Write("\n**************************************************\n");
             if (isStraight(aceLow))
                 Console.WriteLine("Has a straight!\n");
             else {
@@ -81,7 +82,7 @@ namespace CardTester
             Console.WriteLine("\n***************************************\n");
             Console.WriteLine("astraight Not sorted.");
             DisplayCards(straight);
-            Console.WriteLine("\nstraight Sorted low to hight: ");
+            Console.WriteLine("\nstraight Sorted high to low: ");
             straight.Sort(new CardComparerValue());
             DisplayCards(straight);
             Console.WriteLine("\nstraight Sorted with aces low:");
@@ -92,6 +93,7 @@ namespace CardTester
             else {
                 Console.WriteLine("No straight\n");
             }
+
             if (isFourOfAKind(straight))
                 Console.WriteLine("Four Of a Kind!");
             else {
@@ -275,42 +277,73 @@ namespace CardTester
         static void DisplayCards(List<Card> cards) {
             foreach (Card card in cards) {
 
-                Console.WriteLine(card.ToString());
+                Console.Write(card.ToString() + " ");
 
             }
+            Console.Write("\n");
         }
         static bool isStraight(List<Card> cards) {
             cards.Sort(new CardComparerValue());
             int straightCount = 0;
+            int startValue = 0;
             int straightValue = (int)cards[0].Value;
             int straigtValueToCheck;
 
             // Check for straight with Aces high
             for (int i = 1; i < cards.Count(); i++) {
                 straigtValueToCheck = (int)cards[i].Value;
-                if ((straightValue + 1) == straigtValueToCheck) {
-                    straightValue++;
+                
+                if ((straightValue - 1) == straigtValueToCheck) {
+                    straightValue--;
                     straightCount++;
-                    if (straightCount >= 4)
+                    if (straightCount >= 4) {
+                        Console.Write("First card in straight: {0}\n", cards[startValue].ToString());
+                      
+                        List<Card> sh = new List<Card>();
+                        for (int x = 0; x < 5; x++) {
+                            sh.Add(cards[x + startValue]);
+                            
+                        }
+                        Console.Write("\n*********************************************\n");
+                        foreach (Card c in sh) {
+                            Console.Write("====>{0}", c.ToString());
+                        }
+                        Console.Write("\n*********************************************\n");
                         return true;
+                        return true;
+                    }
                 } else {
                     straightValue = straigtValueToCheck;
+                    startValue = i;
                     straightCount = 0;
                 }
             }
             // Check for straight with Aces low
             cards.Sort(new CardCompareAcesLow());
             straightCount = 0;
+            startValue = 0;
             straightValue = ((int)cards[0].Value == 14) ? 1 : (int)cards[0].Value;
             for (int i = 1; i < cards.Count(); i++) {
                 straigtValueToCheck = ((int)cards[i].Value == 14) ? 1 : (int)cards[i].Value;
-                if ((straightValue + 1) == straigtValueToCheck) {
-                    straightValue++;
+                if ((straightValue - 1) == straigtValueToCheck) {
+                    straightValue--;
                     straightCount++;
-                    if (straightCount >= 4)
+                    if (straightCount >= 4) {
+                        Console.Write("First card in straight: {0}\n", cards[startValue].ToString());
+                        List<Card> sh = new List<Card>();
+                        for (int x = 0; x < 5; x++) {
+                            sh.Add(cards[x + startValue]);
+                        }
+                        Console.Write("\n*********************************************\n");
+                        foreach (Card c in sh) {
+                            Console.Write("====>{0}", c.ToString());
+                        }
+                        Console.Write("\n*********************************************\n");
                         return true;
+                    }
                 } else {
                     straightValue = straigtValueToCheck;
+                    startValue = i;
                     straightCount = 0;
                 }
             }
@@ -326,7 +359,42 @@ namespace CardTester
 
             public string Name {
                 get {
-                    return Value + " of " + Suit;
+                    string cardValue;
+                    string cardSuit = "";
+                    switch ((int)Value) {
+                        case 11:
+                            cardValue = "J";
+                            break;
+                        case 12:
+                            cardValue = "Q";
+                            break;
+                        case 13:
+                            cardValue = "K";
+                            break;
+                        case 14:
+                            cardValue = "A";
+                            break;
+                        default:
+                            cardValue = ((int)Value).ToString();
+                            break;
+                    }
+
+                    switch ((int)Suit) {
+                        case 0:
+                            cardSuit = "\u2660";
+                            break;
+                        case 1:
+                            cardSuit = "\u2665";
+                            break;
+                        case 2:
+                            cardSuit = "\u2663";
+                            break;
+                        case 3:
+                            cardSuit = "\u2666";
+                            break;
+                    }
+
+                    return cardValue + cardSuit;
                 }
             }
 
@@ -552,8 +620,12 @@ namespace CardTester
         {
             public int Compare(Card x, Card y) {
                 if (x.Value > y.Value)
-                    return 1;
+                    return -1;
                 if (x.Value < y.Value)
+                    return 1;
+                if (x.Suit > y.Suit)
+                    return 1;
+                if (x.Suit < y.Suit)
                     return -1;
                 else
                     return 0;
@@ -562,11 +634,15 @@ namespace CardTester
         class CardCompareAcesLow : IComparer<Card>
         {
             public int Compare(Card x, Card y) {
-                if (x.Value == Values.Ace)
+                if (y.Value == Values.Ace)
                     return -1;
                 if (x.Value > y.Value)
-                    return 1;
+                    return -1;
                 if (x.Value < y.Value)
+                    return 1;
+                if (x.Suit > y.Suit)
+                    return 1;
+                if (x.Suit < y.Suit)
                     return -1;
                 else
                     return 0;
