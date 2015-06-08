@@ -59,140 +59,52 @@ namespace CardTester
                 new Card(Suits.Spades, Values.Two)
             };
 
-            Console.WriteLine("acesLow Not sorted.");
-            DisplayCards(aceLow);
-            Console.WriteLine("\nacesLow Sorted High to Low: ");
-            aceLow.Sort(new CardComparerValue());
-            DisplayCards(aceLow);
-            Console.WriteLine("\nacesLow Sorted with aces low:");
-            aceLow.Sort(new CardCompareAcesLow());
-            DisplayCards(aceLow);
 
-            Console.Write("\n**************************************************\n");
-            if (isStraight(aceLow))
-                Console.WriteLine("Has a straight!\n");
-            else {
-                Console.WriteLine("No straight\n");
-            }
-            if (isFourOfAKind(aceLow))
-                Console.WriteLine("Four Of a Kind!");
-            else {
-                Console.WriteLine("Not four of a kind");
-            }
-            Console.WriteLine("\n***************************************\n");
-            Console.WriteLine("astraight Not sorted.");
-            DisplayCards(straight);
-            Console.WriteLine("\nstraight Sorted high to low: ");
-            straight.Sort(new CardComparerValue());
-            DisplayCards(straight);
-            Console.WriteLine("\nstraight Sorted with aces low:");
-            straight.Sort(new CardCompareAcesLow());
-            DisplayCards(straight);
-            if (isStraight(straight))
-                Console.WriteLine("=====>Has a straight!\n");
-            else {
-                Console.WriteLine("No straight\n");
+            Console.WriteLine("Testing for four of a kind: ***\n");
+            if (isFourOfAKind(FourOfAKind)) {
+                sortFourOfAKind(FourOfAKind);
             }
 
-            if (isFourOfAKind(straight))
-                Console.WriteLine("Four Of a Kind!");
-            else {
-                Console.WriteLine("Not four of a kind");
-            }
-
-            Console.WriteLine("\n***************************************\n");
-            Console.WriteLine("cards Not sorted.");
-            DisplayCards(cards);
-            Console.WriteLine("\ncards Sorted low to hight: ");
-            cards.Sort(new CardComparerValue());
-            DisplayCards(cards);
-            Console.WriteLine("\ncards Sorted with aces low:");
-            cards.Sort(new CardCompareAcesLow());
-            DisplayCards(cards);
-            
-            Console.WriteLine("\n***************************************\n");
-            DisplayCards(cards);
-            if (isStraight(cards))
-                Console.WriteLine("Has a straight!\n");
-            else {
-                Console.WriteLine("No straight\n");
-            }
-            if (isFourOfAKind(cards))
-                Console.WriteLine("Four Of a Kind!");
-            else {
-                Console.WriteLine("Not four of a kind");
-            }
-
-            Console.WriteLine("\n***************************************\n");
-            DisplayCards(FourOfAKind);
-            if (isFourOfAKind(FourOfAKind))
-                Console.WriteLine("Four Of a Kind!");
-            else {
-                Console.WriteLine("Not four of a kind");
-            }
-
-            Console.WriteLine("\n***************************************\n");
-            DisplayCards(FullHouse);
-            if (isFullHouse(FullHouse))
-                Console.WriteLine("Full house!");
-            else {
-                Console.WriteLine("Not full house");
-            }
-
-            Console.WriteLine("\n***************************************\n");
-            DisplayCards(FourOfAKind);
-            if (isFullHouse(FourOfAKind))
-                Console.WriteLine("Full house!");
-            else {
-                Console.WriteLine("Not full house");
-            }
-            Console.WriteLine("\n***************************************\n");
-            DisplayCards(aceLow);
-            if (isPair(aceLow))
-                Console.WriteLine("Pair!");
-            else {
-                Console.WriteLine("Not pair");
-            }
-
-            Console.WriteLine("\n***************************************\n");
-            DisplayCards(cards);
-            if (isTwoPair(cards))
-                Console.WriteLine("Two pair!");
-            else {
-                Console.WriteLine("Not two pair");
-            }
-            /*
-            Dictionary<Suits, int> suitCount = new Dictionary<Suits, int>();
-            int[] count = new int[4];
-            foreach (Card card in cards) {
-                if (suitCount.ContainsKey(card.Suit)) {
-                    suitCount[card.Suit]++;
-                    if (suitCount[card.Suit] >= 5)
-                        Console.WriteLine("Flush! with {0}", card.Suit);
-                } else {
-                    suitCount.Add(card.Suit, 1);
-                }
-
-            }
-
-            foreach (Card card in cards) {
-                count[(int)card.Suit]++;
-                if (count[(int)card.Suit] >= 5)
-                    Console.WriteLine("Flush found with {0}", card.Suit);
-            }
-            foreach (var item in suitCount) {
-                Console.Write(item.Key);
-                Console.Write(" has {0}\n", item.Value);
-            } */
             Console.ReadLine();
         }
 
+        static void sortFourOfAKind(List<Card> cards) {
+            Dictionary<Values, int> count = new Dictionary<Values, int>();
+            List<Card> BestHand = new List<Card>();
+            List<Card> OtherCards = new List<Card>();
+            Values fourOfAKindValue = Values.Ace;
+            count = getCardDictionary(cards);
+            foreach (var item in count) {
+                if (item.Value == 4)
+                    fourOfAKindValue = (Values)item.Key;
+            }
+            foreach (Card card in cards) {
+                if (card.Value == fourOfAKindValue)
+                    BestHand.Add(card);
+                else
+                    OtherCards.Add(card);
+            }
+            Console.Write("\nBest hand: \n");
+            foreach (Card card in BestHand)
+	        {
+		        Console.Write("{0} ", card.ToString());
+	        }
+            Console.Write("\nOther Hand: \n");
+            foreach (Card card in OtherCards)
+	        {
+		        Console.Write("{0} ", card.ToString());
+	        }
+
+        }
         static bool isFourOfAKind(List<Card> cards) {
-            var count = cards.GroupBy(c => c.Value).Count();
-            if (count == 4)
-                return true;
-            else
-                return false;
+            Dictionary<Values, int> count = new Dictionary<Values, int>();
+            count = getCardDictionary(cards);
+            foreach (var item in count) {
+                if (item.Value == 4)
+                    return true;
+            }
+            return false;
+        
         }
 
         static bool isThreeOfAKind(List<Card> cards) {
@@ -282,6 +194,7 @@ namespace CardTester
             }
             Console.Write("\n");
         }
+
         static bool isStraight(List<Card> cards) {
             cards.Sort(new CardComparerValue());
             int straightCount = 0;
@@ -300,8 +213,12 @@ namespace CardTester
                         Console.Write("First card in straight: {0}\n", cards[startValue].ToString());
                       
                         List<Card> sh = new List<Card>();
-                        for (int x = 0; x < 5; x++) {
-                            sh.Add(cards[x + startValue]);
+                        List<Card> oc = new List<Card>();
+                        for (int x = 0; x < cards.Count; x++) {
+                            if (x == startValue || x == (startValue + 1) || x == (startValue + 2) || x == (startValue + 3) || x == (startValue + 4))
+                                sh.Add(cards[x]);
+                            else
+                                oc.Add(cards[x]);
                             
                         }
                         Console.Write("\n*********************************************\n");
@@ -309,8 +226,13 @@ namespace CardTester
                             Console.Write("====>{0}", c.ToString());
                         }
                         Console.Write("\n*********************************************\n");
+                        Console.Write("******** OTHER CARDS *************************\n");
+                        foreach (Card c in oc) {
+                            Console.Write("---> {0}", c.ToString());
+                        }
+                        Console.Write("\n");
                         return true;
-                        return true;
+                        
                     }
                 } else {
                     straightValue = straigtValueToCheck;
@@ -331,14 +253,23 @@ namespace CardTester
                     if (straightCount >= 4) {
                         Console.Write("First card in straight: {0}\n", cards[startValue].ToString());
                         List<Card> sh = new List<Card>();
-                        for (int x = 0; x < 5; x++) {
-                            sh.Add(cards[x + startValue]);
+                        List<Card> oc = new List<Card>();
+                        for (int x = 0; x < cards.Count; x++) {
+                            if (x == startValue || x == (startValue + 1) || x == (startValue + 2) || x == (startValue + 3) || x == (startValue + 4))
+                                sh.Add(cards[x]);
+                            else
+                                oc.Add(cards[x]);
                         }
                         Console.Write("\n*********************************************\n");
                         foreach (Card c in sh) {
                             Console.Write("====>{0}", c.ToString());
                         }
                         Console.Write("\n*********************************************\n");
+                        Console.Write("******** OTHER CARDS *************************\n");
+                        foreach (Card c in oc) {
+                            Console.Write("---> {0}", c.ToString());
+                        }
+                        Console.Write("\n");
                         return true;
                     }
                 } else {
