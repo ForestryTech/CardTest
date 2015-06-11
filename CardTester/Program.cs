@@ -60,14 +60,176 @@ namespace CardTester
             };
 
 
-            Console.WriteLine("Testing for four of a kind: ***\n");
-            if (isFourOfAKind(FourOfAKind)) {
-                sortFourOfAKind(FourOfAKind);
-            }
+            testHands(FourOfAKind, "Four of a Kind");
+            Console.WriteLine("\n************************************************************\n");
+            testHands(cards, "Cards");
+            Console.WriteLine("\n************************************************************\n");
+            testHands(straight, "Straight");
+            Console.WriteLine("\n************************************************************\n");
+            testHands(FullHouse, "FullHouse");
+            Console.WriteLine("\n************************************************************\n");
+            testHands(aceLow, "aceLow");
 
             Console.ReadLine();
         }
 
+        static void testHands(List<Card> cards, string name) {
+            Console.WriteLine("Testing: {0}", name);
+            DisplayCards(cards);
+            Console.WriteLine("*** IS Four of a Kind");
+            if (isFourOfAKind(cards)) {
+                Console.WriteLine("****** FOUND FOUR OF A KIND!");
+                sortFourOfAKind(cards);
+            } else {
+                Console.WriteLine("Not four of a kind");
+            }
+
+            Console.WriteLine("\n*** IS Three of a Kind");
+            if (isThreeOfAKind(cards)) {
+                Console.WriteLine("****** FOUND THREE OF A KIND!");
+                sortThreeOfAKind(cards);
+            } else {
+                Console.WriteLine("Not three of a kind");
+            }
+            Console.WriteLine("\n*** IS Pair");
+            if (isPair(cards)) {
+                Console.WriteLine("****** FOUND PAIR!");
+                sortPair(cards);
+            } else {
+                Console.WriteLine("Not a pair");
+            }
+            Console.WriteLine("\n*** IS two Pair");
+            if (isTwoPair(cards)) {
+                Console.WriteLine("****** FOUND TWO PAIR!");
+                sortTwoPair(cards);
+            } else {
+                Console.WriteLine("Not two pair");
+            }
+            Console.WriteLine("\n*** IS Full House");
+            if (isFullHouse(cards)) {
+                Console.WriteLine("****** FOUND FULL HOUSE!");
+                sortFullHouse(cards);
+            } else {
+                Console.WriteLine("Not full house");
+            }
+            Console.WriteLine("\n*** IS Flush");
+            if (isFlush(cards)) {
+                Console.WriteLine("****** FOUND A FLUSH!");
+                sortFlush(cards);
+            } else {
+                Console.WriteLine("Not a flush");
+            }
+
+            Console.WriteLine("\n*** IS a straight");
+            if (isStraight(cards)) {
+                Console.WriteLine("****** FOUND A STRAIGHT!");
+                sortStraight(cards);
+            } else {
+                Console.WriteLine("not a straight");
+            }
+        }
+
+        static void sortStraight(List<Card> AllCards) {
+            AllCards.Sort(new CardComparerValue());
+            List<Card> BestHand = new List<Card>();
+            List<Card> OtherCards = new List<Card>();
+            int straightCount = 0;
+            int startValue = 0;
+            int straightValue = (int)AllCards[0].Value;
+            int straigtValueToCheck;
+            bool cont = true;
+
+            // Check for straight with Aces high
+            for (int i = 1; i < AllCards.Count(); i++) {
+                straigtValueToCheck = (int)AllCards[i].Value;
+
+                if ((straightValue - 1) == straigtValueToCheck) {
+                    straightValue--;
+                    straightCount++;
+                    if (straightCount >= 4) {
+                        for (int x = 0; x < AllCards.Count; x++) {
+                            if (x == startValue || x == (startValue + 1) || x == (startValue + 2) || x == (startValue + 3) || x == (startValue + 4))
+                                BestHand.Add(AllCards[x]);
+                            else
+                                OtherCards.Add(AllCards[x]);
+
+                        }
+                        cont = false;
+                        break;
+                    }
+                } else {
+                    straightValue = straigtValueToCheck;
+                    startValue = i;
+                    straightCount = 0;
+                }
+            }
+            if (cont == false) {
+                Console.Write("Best Hand: ");
+                DisplayCards(BestHand);
+                Console.Write("\nOther Cards: ");
+                DisplayCards(OtherCards);
+                return;
+            }
+            // Check for straight with Aces low
+            AllCards.Sort(new CardCompareAcesLow());
+            straightCount = 0;
+            startValue = 0;
+            straightValue = ((int)AllCards[0].Value == 14) ? 1 : (int)AllCards[0].Value;
+            for (int i = 1; i < AllCards.Count(); i++) {
+                straigtValueToCheck = ((int)AllCards[i].Value == 14) ? 1 : (int)AllCards[i].Value;
+                if ((straightValue - 1) == straigtValueToCheck) {
+                    straightValue--;
+                    straightCount++;
+                    if (straightCount >= 4) {
+                        for (int x = 0; x < AllCards.Count; x++) {
+                            if (x == startValue || x == (startValue + 1) || x == (startValue + 2) || x == (startValue + 3) || x == (startValue + 4))
+                                BestHand.Add(AllCards[x]);
+                            else
+                                OtherCards.Add(AllCards[x]);
+                        }
+                        break;
+                    }
+                } else {
+                    straightValue = straigtValueToCheck;
+                    startValue = i;
+                    straightCount = 0;
+                }
+            }
+            Console.Write("Best Hand: ");
+            DisplayCards(BestHand);
+            Console.Write("\nOther Cards: ");
+            DisplayCards(OtherCards);
+        }
+
+        static void sortFlush(List<Card> AllCards) {
+            Suits suit = Suits.Clubs;
+            List<Card> BestHand = new List<Card>();
+            List<Card> OtherCards = new List<Card>();
+            int[] cardsPerSuit = new int[4];
+            foreach (Card card in AllCards) {
+                cardsPerSuit[(int)card.Suit]++;
+                if (cardsPerSuit[(int)card.Suit] > 4) {
+                    suit = card.Suit;
+                    break;
+                }
+            }
+            AllCards.Sort(new CardComparerValue());
+            AllCards.Reverse();
+            int ctr = 0;
+            foreach (Card card in AllCards) {
+                if ((card.Suit == suit) && ctr < 5) {
+                    BestHand.Add(card);
+                    ctr++;
+                } else {
+                    OtherCards.Add(card);
+                }
+            }
+
+            Console.Write("Best Hand: ");
+            DisplayCards(BestHand);
+            Console.Write("\nOther Cards: ");
+            DisplayCards(OtherCards);
+        }
         static void sortFourOfAKind(List<Card> cards) {
             Dictionary<Values, int> count = new Dictionary<Values, int>();
             List<Card> BestHand = new List<Card>();
@@ -84,18 +246,122 @@ namespace CardTester
                 else
                     OtherCards.Add(card);
             }
-            Console.Write("\nBest hand: \n");
-            foreach (Card card in BestHand)
-	        {
-		        Console.Write("{0} ", card.ToString());
-	        }
-            Console.Write("\nOther Hand: \n");
-            foreach (Card card in OtherCards)
-	        {
-		        Console.Write("{0} ", card.ToString());
-	        }
+
+            Console.Write("Best Hand: ");
+            DisplayCards(BestHand);
+            Console.Write("\nOther Cards: ");
+            DisplayCards(OtherCards);
+        }
+
+        static void sortThreeOfAKind(List<Card> cards) {
+            List<Card> BestHand = new List<Card>();
+            List<Card> OtherCards = new List<Card>();
+            Dictionary<Values, int> count = getCardDictionary(cards);
+            Values threeOfAKind = Values.Ace;
+
+            foreach (var item in count) {
+                if (item.Value == 3)
+                    threeOfAKind = item.Key;
+            }
+
+            foreach (Card card in cards) {
+                if (card.Value == threeOfAKind)
+                    BestHand.Add(card);
+                else
+                    OtherCards.Add(card);
+            }
+
+            Console.Write("Best Hand: ");
+            DisplayCards(BestHand);
+            Console.Write("\nOther Cards: ");
+            DisplayCards(OtherCards);
+        }
+
+        static void sortPair(List<Card> cards) {
+            List<Card> BestHand = new List<Card>();
+            List<Card> OtherCards = new List<Card>();
+            Dictionary<Values, int> count = getCardDictionary(cards);
+            Values pair = Values.Ace;
+
+            foreach (var item in count) {
+                if (item.Value == 2)
+                    pair = item.Key;
+            }
+
+            foreach (Card card in cards) {
+                if (card.Value == pair)
+                    BestHand.Add(card);
+                else
+                    OtherCards.Add(card);
+            }
+
+            Console.Write("Best Hand: ");
+            DisplayCards(BestHand);
+            Console.Write("\nOther Cards: ");
+            DisplayCards(OtherCards);
+        }
+
+        static void sortFullHouse(List<Card> cards) {
+            List<Card> BestHand = new List<Card>();
+            List<Card> OtherCards = new List<Card>();
+            Dictionary<Values, int> count = getCardDictionary(cards);
+            Values threeOfAKind = Values.Ace;
+            Values pair = Values.Ace;
+
+            foreach (var item in count) {
+                if (item.Value == 3)
+                    threeOfAKind = item.Key;
+                if (item.Value == 2)
+                    pair = item.Key;
+            }
+
+            foreach (Card card in cards) {
+                if ((card.Value == threeOfAKind) || (card.Value == pair))
+                    BestHand.Add(card);
+                else
+                    OtherCards.Add(card);
+            }
+
+            Console.Write("Best Hand: ");
+            DisplayCards(BestHand);
+            Console.Write("\nOther Cards: ");
+            DisplayCards(OtherCards);
+        }
+
+        static void sortTwoPair(List<Card> cards) {
+            List<Card> BestHand = new List<Card>();
+            List<Card> OtherCards = new List<Card>();
+            Dictionary<Values, int> count = getCardDictionary(cards);
+            Values firstPair = Values.Ace;
+            Values secondPair = Values.Ace;
+            bool firstPairExists = false;
+            bool secondPairExists = false;
+
+            foreach (var item in count) {
+                if ((item.Value == 2) && !firstPairExists) {
+                    firstPair = item.Key;
+                    firstPairExists = true;
+                }
+                else if ((item.Value == 2)) {
+                    secondPairExists = true;
+                    secondPair = item.Key;
+                }
+            }
+
+            foreach (Card card in cards) {
+                if ((card.Value == firstPair) || (card.Value == secondPair))
+                    BestHand.Add(card);
+                else
+                    OtherCards.Add(card);
+            }
+
+            Console.Write("Best Hand: ");
+            DisplayCards(BestHand);
+            Console.Write("\nOther Cards: ");
+            DisplayCards(OtherCards);
 
         }
+
         static bool isFourOfAKind(List<Card> cards) {
             Dictionary<Values, int> count = new Dictionary<Values, int>();
             count = getCardDictionary(cards);
@@ -105,6 +371,16 @@ namespace CardTester
             }
             return false;
         
+        }
+
+        static  bool isFlush(List<Card> cards) {
+            int[] count = new int[4];
+            foreach (Card card in cards) {
+                count[(int)card.Suit]++;
+                if (count[(int)card.Suit] >= 5)
+                    return true;
+            }
+            return false;
         }
 
         static bool isThreeOfAKind(List<Card> cards) {
@@ -136,7 +412,7 @@ namespace CardTester
             foreach (var item in count) {
                 if ((item.Value == 2) && !firstPair)
                     firstPair = true;
-                if (item.Value == 2 && firstPair)
+                else if (item.Value == 2)
                     secondPair = true;
             }
 
@@ -195,7 +471,7 @@ namespace CardTester
             Console.Write("\n");
         }
 
-        static bool isStraight(List<Card> cards) {
+        static bool aisStraight(List<Card> cards) {
             cards.Sort(new CardComparerValue());
             int straightCount = 0;
             int startValue = 0;
@@ -282,337 +558,44 @@ namespace CardTester
 
         }
 
+        static bool isStraight(List<Card> cards) {
+            cards.Sort(new CardComparerValue());
+            int straightCount = 0;
+            int straightValue = (int)cards[0].Value;
+            int straigtValueToCheck;
 
-        class Card
-        {
-            public Suits Suit { get; set; }
-            public Values Value { get; set; }
-
-            public string Name {
-                get {
-                    string cardValue;
-                    string cardSuit = "";
-                    switch ((int)Value) {
-                        case 11:
-                            cardValue = "J";
-                            break;
-                        case 12:
-                            cardValue = "Q";
-                            break;
-                        case 13:
-                            cardValue = "K";
-                            break;
-                        case 14:
-                            cardValue = "A";
-                            break;
-                        default:
-                            cardValue = ((int)Value).ToString();
-                            break;
-                    }
-
-                    switch ((int)Suit) {
-                        case 0:
-                            cardSuit = "\u2660";
-                            break;
-                        case 1:
-                            cardSuit = "\u2665";
-                            break;
-                        case 2:
-                            cardSuit = "\u2663";
-                            break;
-                        case 3:
-                            cardSuit = "\u2666";
-                            break;
-                    }
-
-                    return cardValue + cardSuit;
+            // Check for straight with Aces high
+            for (int i = 1; i < cards.Count(); i++) {
+                straigtValueToCheck = (int)cards[i].Value;
+                if ((straightValue - 1) == straigtValueToCheck) {
+                    straightValue--;
+                    straightCount++;
+                    if (straightCount >= 4)
+                        return true;
+                } else {
+                    straightValue = straigtValueToCheck;
+                    straightCount = 0;
                 }
             }
-
-            public override string ToString() {
-                return Name;
-            }
-
-            public Card(int suit, int value) {
-                Suit = (Suits)suit;
-                Value = (Values)value;
-            }
-
-            public Card(Suits suit, Values value) {
-                this.Suit = suit;
-                this.Value = value;
-            }
-
-            public Card() { }
-        }
-
-        class Player
-        {
-            internal protected List<Card> cards;
-            private string playerName;
-            private double cash;
-            public Hand PlayerHand { get; set; }
-
-            public double Bet { get; set; }
-            public bool Playing { get; private set; }
-
-            public void GetCard(Card card) {
-                cards.Add(card);
-            }
-
-            public string ShowCards() {
-                string currentHand = playerName + " hand: ";
-                for (int i = 0; i < cards.Count(); i++) {
-                    if (i == (cards.Count() - 1))
-                        currentHand += cards[i].Name;
-                    else
-                        currentHand += cards[i].Name + ", ";
-                }
-                return currentHand;
-            }
-
-            public Player(string name) {
-                cards = new List<Card>();
-                playerName = name;
-            }
-
-            public Player(List<Card> cards) {
-                this.cards = cards;
-            }
-        }
-
-        class Deck
-        {
-            private List<Card> cards;
-            private Random random = new Random();
-
-            public Deck() {
-                cards = new List<Card>();
-                for (int suit = 0; suit <= 3; suit++) {
-                    for (int value = 1; value <= 13; value++) {
-                        cards.Add(new Card(suit, value));
-                    }
+            // Check for straight with Aces low
+            cards.Sort(new CardCompareAcesLow());
+            straightCount = 0;
+            straightValue = ((int)cards[0].Value == 14) ? 1 : (int)cards[0].Value;
+            for (int i = 1; i < cards.Count(); i++) {
+                straigtValueToCheck = ((int)cards[i].Value == 14) ? 1 : (int)cards[i].Value;
+                if ((straightValue - 1) == straigtValueToCheck) {
+                    straightValue--;
+                    straightCount++;
+                    if (straightCount >= 4)
+                        return true;
+                } else {
+                    straightValue = straigtValueToCheck;
+                    straightCount = 0;
                 }
             }
-
-            public Deck(List<Card> initialCards) {
-                cards = new List<Card>(initialCards);
-            }
-
-            public int Count { get { return cards.Count; } }
-
-            public void Add(Card cardToAdd) {
-                cards.Add(cardToAdd);
-            }
-
-            public Card Deal(int index) {
-                Card cardToDeal = cards[index];
-                cards.RemoveAt(index);
-                return cardToDeal;
-            }
-
-            public void Shuffle() {
-                List<Card> newDeck = new List<Card>();
-                while (cards.Count > 0) {
-                    int cardToMove = random.Next(cards.Count);
-                    newDeck.Add(cards[cardToMove]);
-                    cards.RemoveAt(cardToMove);
-                }
-                cards = newDeck;
-            }
-
-        }
-
-        class Hand
-        {
-            public HandType Type {
-                get {
-                    List<Card> allCards = new List<Card>();
-                    foreach (Card card in player.cards) {
-                        allCards.Add(card);
-                    }
-                    foreach (Card card in game.CommunityCards) {
-                        allCards.Add(card);
-                    }
+            return false;
 
 
-                    return HandType.Flush;
-                }
-            }
-
-            public Card PrimaryHigh {
-                get {
-                    Card tempCard;
-                    player.cards.Sort(new CardComparerValue());
-                    tempCard = player.cards[0];
-                    return tempCard;
-                }
-            }
-
-            public Card SecondaryHigh {
-                get {
-                    Card tempCard;
-                    player.cards.Sort(new CardComparerValue());
-                    tempCard = player.cards[1];
-                    return tempCard;
-                }
-            }
-
-            private Player player;
-            private Game game;
-
-            public Hand(Player player) {
-                this.player = player;
-            }
-            /*
-            private bool isFlush(List<Card> cards) {
-            cards.Sort(new CardComparerSuit());
-            int num = cards.Select(s => )
-            }
-
-            private bool isStraight(List<Card> cards) {
-
-            }
-
-            private bool isFullHouse(List<Card> cards) {
-
-            }
-
-            private bool isFourOfAKind(List<Card> cards) {
-
-            }
-
-            private bool isThreeOfAKind(List<Card> cards) {
-
-            }
-
-            private bool isTwoPair(List<Card> cards) {
-
-            }
-
-            private bool isPair(List<Card> cards) {
-
-            } */
-        }
-
-        class Game
-        {
-            internal List<Card> CommunityCards;
-
-            internal List<Player> Players;
-            internal Deck GameDeck;
-
-            public Game() {
-                CommunityCards = new List<Card>();
-                Players = new List<Player>();
-                GameDeck = new Deck();
-            }
-        }
-
-        enum Values
-        {
-            Ace = 14,
-            Two = 2,
-            Three = 3,
-            Four = 4,
-            Five = 5,
-            Six = 6,
-            Seven = 7,
-            Eight = 8,
-            Nine = 9,
-            Ten = 10,
-            Jack = 11,
-            Queen = 12,
-            King = 13,
-        }
-
-        enum Suits
-        {
-            Spades,
-            Hearts,
-            Clubs,
-            Diamonds,
-        }
-
-        enum HandType
-        {
-            StraightFlush = 1,
-            FourOfAKind = 2,
-            FullHouse = 3,
-            Flush = 4,
-            Straight = 5,
-            ThreeOfAKind = 6,
-            TwoPair = 7,
-            OnePair = 8,
-            HighCard = 9,
-        }
-
-        class CardComparerValue : IComparer<Card>
-        {
-            public int Compare(Card x, Card y) {
-                if (x.Value > y.Value)
-                    return -1;
-                if (x.Value < y.Value)
-                    return 1;
-                if (x.Suit > y.Suit)
-                    return 1;
-                if (x.Suit < y.Suit)
-                    return -1;
-                else
-                    return 0;
-            }
-        }
-        class CardCompareAcesLow : IComparer<Card>
-        {
-            public int Compare(Card x, Card y) {
-                if (y.Value == Values.Ace)
-                    return -1;
-                if (x.Value > y.Value)
-                    return -1;
-                if (x.Value < y.Value)
-                    return 1;
-                if (x.Suit > y.Suit)
-                    return 1;
-                if (x.Suit < y.Suit)
-                    return -1;
-                else
-                    return 0;
-            }
-        }
-
-        class CardComparerSuit : IComparer<Card>
-        {
-            public int Compare(Card x, Card y) {
-                if (x.Suit > y.Suit)
-                    return 1;
-                if (x.Suit < y.Suit)
-                    return -1;
-                else
-                    return 0;
-            }
-        }
-        class HandComparer : IComparer<Hand>
-        {
-            public int Compare(Hand x, Hand y) {
-                if (x.Type > y.Type)
-                    return 1;
-                if (x.Type < y.Type)
-                    return -1;
-                else {
-                    if (x.PrimaryHigh.Value > y.PrimaryHigh.Value)
-                        return 1;
-                    if (x.PrimaryHigh.Value < y.PrimaryHigh.Value)
-                        return -1;
-                    else {
-                        if (x.SecondaryHigh.Value > y.SecondaryHigh.Value)
-                            return 1;
-                        if (x.SecondaryHigh.Value < y.SecondaryHigh.Value)
-                            return -1;
-                        else
-                            return 0;
-                    }
-                }
-            }
         }
     }
 }
