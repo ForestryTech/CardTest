@@ -59,6 +59,15 @@ namespace CardTester
                 new Card(Suits.Spades, Values.Two)
             };
 
+            List<Card> bHand = new List<Card>() {
+                new Card(Suits.Clubs, Values.Ace),
+                new Card(Suits.Diamonds, Values.Eight),
+                new Card(Suits.Diamonds, Values.Jack),
+                new Card(Suits.Hearts, Values.Three),
+                new Card(Suits.Spades, Values.Five),
+                new Card(Suits.Clubs, Values.Seven),
+                new Card(Suits.Hearts, Values.Queen)};
+
 
             testHands(FourOfAKind, "Four of a Kind");
             Console.WriteLine("\n************************************************************\n");
@@ -69,6 +78,8 @@ namespace CardTester
             testHands(FullHouse, "FullHouse");
             Console.WriteLine("\n************************************************************\n");
             testHands(aceLow, "aceLow");
+            Console.WriteLine("\n************************************************************\n");
+            testHands(bHand, "High Card");
 
             Console.ReadLine();
         }
@@ -127,6 +138,9 @@ namespace CardTester
             } else {
                 Console.WriteLine("not a straight");
             }
+
+            Console.WriteLine("\n*** IS HighCard");
+            sortHighCard(cards);
         }
 
         static void sortStraight(List<Card> AllCards) {
@@ -150,8 +164,6 @@ namespace CardTester
                         for (int x = 0; x < AllCards.Count; x++) {
                             if (x == startValue || x == (startValue + 1) || x == (startValue + 2) || x == (startValue + 3) || x == (startValue + 4))
                                 BestHand.Add(AllCards[x]);
-                            else
-                                OtherCards.Add(AllCards[x]);
 
                         }
                         cont = false;
@@ -166,8 +178,6 @@ namespace CardTester
             if (cont == false) {
                 Console.Write("Best Hand: ");
                 DisplayCards(BestHand);
-                Console.Write("\nOther Cards: ");
-                DisplayCards(OtherCards);
                 return;
             }
             // Check for straight with Aces low
@@ -184,8 +194,6 @@ namespace CardTester
                         for (int x = 0; x < AllCards.Count; x++) {
                             if (x == startValue || x == (startValue + 1) || x == (startValue + 2) || x == (startValue + 3) || x == (startValue + 4))
                                 BestHand.Add(AllCards[x]);
-                            else
-                                OtherCards.Add(AllCards[x]);
                         }
                         break;
                     }
@@ -197,8 +205,6 @@ namespace CardTester
             }
             Console.Write("Best Hand: ");
             DisplayCards(BestHand);
-            Console.Write("\nOther Cards: ");
-            DisplayCards(OtherCards);
         }
 
         static void sortFlush(List<Card> AllCards) {
@@ -220,42 +226,40 @@ namespace CardTester
                 if ((card.Suit == suit) && ctr < 5) {
                     BestHand.Add(card);
                     ctr++;
-                } else {
-                    OtherCards.Add(card);
                 }
             }
 
             Console.Write("Best Hand: ");
             DisplayCards(BestHand);
-            Console.Write("\nOther Cards: ");
-            DisplayCards(OtherCards);
+
         }
+
         static void sortFourOfAKind(List<Card> cards) {
             Dictionary<Values, int> count = new Dictionary<Values, int>();
+            List<Card> temp = cards.ToList();
+            
             List<Card> BestHand = new List<Card>();
-            List<Card> OtherCards = new List<Card>();
             Values fourOfAKindValue = Values.Ace;
             count = getCardDictionary(cards);
             foreach (var item in count) {
                 if (item.Value == 4)
                     fourOfAKindValue = (Values)item.Key;
             }
-            foreach (Card card in cards) {
-                if (card.Value == fourOfAKindValue)
-                    BestHand.Add(card);
-                else
-                    OtherCards.Add(card);
-            }
+
+
+            BestHand = cards.Where(c => c.Value == fourOfAKindValue).ToList();
+            temp = cards.Where(c => c.Value != fourOfAKindValue).ToList();
+            temp.Sort(new CardComparerValue());
+            BestHand.Add(temp[0]);
 
             Console.Write("Best Hand: ");
             DisplayCards(BestHand);
-            Console.Write("\nOther Cards: ");
-            DisplayCards(OtherCards);
+
         }
 
         static void sortThreeOfAKind(List<Card> cards) {
             List<Card> BestHand = new List<Card>();
-            List<Card> OtherCards = new List<Card>();
+            List<Card> temp = cards.ToList();
             Dictionary<Values, int> count = getCardDictionary(cards);
             Values threeOfAKind = Values.Ace;
 
@@ -264,41 +268,39 @@ namespace CardTester
                     threeOfAKind = item.Key;
             }
 
-            foreach (Card card in cards) {
-                if (card.Value == threeOfAKind)
-                    BestHand.Add(card);
-                else
-                    OtherCards.Add(card);
-            }
+            BestHand = cards.Where(c => c.Value == threeOfAKind).ToList();
+            temp = cards.Where(c => c.Value != threeOfAKind).ToList();
+            temp.Sort(new CardComparerValue());
+            BestHand.Add(temp[0]);
+            BestHand.Add(temp[1]);
 
             Console.Write("Best Hand: ");
             DisplayCards(BestHand);
-            Console.Write("\nOther Cards: ");
-            DisplayCards(OtherCards);
+
         }
 
         static void sortPair(List<Card> cards) {
             List<Card> BestHand = new List<Card>();
-            List<Card> OtherCards = new List<Card>();
+            List<Card> temp = cards.ToList();
             Dictionary<Values, int> count = getCardDictionary(cards);
             Values pair = Values.Ace;
 
             foreach (var item in count) {
-                if (item.Value == 2)
+                if (item.Value == 2) {
                     pair = item.Key;
+                    break;
+                }
             }
 
-            foreach (Card card in cards) {
-                if (card.Value == pair)
-                    BestHand.Add(card);
-                else
-                    OtherCards.Add(card);
-            }
+            BestHand = cards.Where(c => c.Value == pair).ToList();
+            temp = cards.Where(c => c.Value != pair).ToList();
+            BestHand.Add(temp[0]);
+            BestHand.Add(temp[1]);
+            BestHand.Add(temp[2]);
 
             Console.Write("Best Hand: ");
             DisplayCards(BestHand);
-            Console.Write("\nOther Cards: ");
-            DisplayCards(OtherCards);
+
         }
 
         static void sortFullHouse(List<Card> cards) {
@@ -315,22 +317,23 @@ namespace CardTester
                     pair = item.Key;
             }
 
+            BestHand = cards.Where(c => c.Value == threeOfAKind || c.Value == pair).ToList();
+            /*
             foreach (Card card in cards) {
                 if ((card.Value == threeOfAKind) || (card.Value == pair))
                     BestHand.Add(card);
                 else
                     OtherCards.Add(card);
             }
-
+            */
             Console.Write("Best Hand: ");
             DisplayCards(BestHand);
-            Console.Write("\nOther Cards: ");
-            DisplayCards(OtherCards);
+
         }
 
         static void sortTwoPair(List<Card> cards) {
             List<Card> BestHand = new List<Card>();
-            List<Card> OtherCards = new List<Card>();
+            List<Card> temp = new List<Card>();
             Dictionary<Values, int> count = getCardDictionary(cards);
             Values firstPair = Values.Ace;
             Values secondPair = Values.Ace;
@@ -348,18 +351,24 @@ namespace CardTester
                 }
             }
 
-            foreach (Card card in cards) {
-                if ((card.Value == firstPair) || (card.Value == secondPair))
-                    BestHand.Add(card);
-                else
-                    OtherCards.Add(card);
+            BestHand = cards.Where(c => c.Value == firstPair || c.Value == secondPair).ToList();
+            temp = cards.Where(c => c.Value != firstPair || c.Value != secondPair).ToList();
+            temp.Sort(new CardComparerValue());
+            BestHand.Add(temp[0]);
+          
+            Console.Write("Best Hand: ");
+            DisplayCards(BestHand);
+        }
+
+        static void sortHighCard(List<Card> cards) {
+            List<Card> BestHand = new List<Card>();
+            cards.Sort(new CardComparerValue());
+            for (int i = 0; i < 5; i++) {
+                BestHand.Add(cards[i]);
             }
 
             Console.Write("Best Hand: ");
             DisplayCards(BestHand);
-            Console.Write("\nOther Cards: ");
-            DisplayCards(OtherCards);
-
         }
 
         static bool isFourOfAKind(List<Card> cards) {
