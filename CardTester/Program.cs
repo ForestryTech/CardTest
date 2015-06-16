@@ -44,9 +44,9 @@ namespace CardTester
                 new Card(Suits.Diamonds, Values.Two),
                 new Card(Suits.Hearts, Values.Six),
                 new Card(Suits.Diamonds, Values.Three),
-                new Card(Suits.Hearts, Values.Two),
-                new Card(Suits.Clubs, Values.Three),
-                new Card(Suits.Spades, Values.Two)
+                new Card(Suits.Hearts, Values.Ace),
+                new Card(Suits.Clubs, Values.Ace),
+                new Card(Suits.Spades, Values.Five)
             };
 
             List<Card> FullHouse = new List<Card>() {
@@ -82,6 +82,10 @@ namespace CardTester
             testHands(bHand, "High Card");
 
             Console.ReadLine();
+        }
+
+        static void CHands(List<Card> c1, List<Card> c2) {
+
         }
 
         static void testHands(List<Card> cards, string name) {
@@ -352,7 +356,7 @@ namespace CardTester
             }
 
             BestHand = cards.Where(c => c.Value == firstPair || c.Value == secondPair).ToList();
-            temp = cards.Where(c => c.Value != firstPair || c.Value != secondPair).ToList();
+            temp = cards.Where(c => c.Value != firstPair && c.Value != secondPair).ToList();
             temp.Sort(new CardComparerValue());
             BestHand.Add(temp[0]);
           
@@ -605,6 +609,21 @@ namespace CardTester
             return false;
 
 
+        }
+
+
+
+
+        private int compareHand(List<Card> p1, List<Card> p2) {
+            p1.Sort(new CardComparerValue());
+            p2.Sort(new CardComparerValue());
+            for (int i = 0; i < 5; i++) {
+                if (p1[i].Value > p1[i].Value)
+                    return 1;
+                else if (p1[i].Value < p1[i].Value)
+                    return -1;
+            }
+            return 0;
         }
     }
 }
